@@ -1,0 +1,97 @@
+#include <iostream>
+#include <fstream>
+
+class FileWorker {
+private:
+    static FileWorker* instance;
+    FileWorker() {} // Private constructor
+    ~FileWorker() {} // Private destructor
+    FileWorker(const FileWorker&) = delete; // Private copy constructor
+    FileWorker& operator=(const FileWorker&) = delete; // Private copy assignment operator
+
+public:
+    static FileWorker* getInstance() {
+        if (instance == nullptr) {
+            instance = new FileWorker();
+        }
+        return instance;
+    }
+
+    void createFile(const std::string& filePath) {
+        std::ofstream file(filePath);
+        if (!file) {
+            std::cerr << "Error creating file!" << std::endl;
+            return;
+        }
+        file.close();
+    }
+
+    void renameFile(const std::string& oldPath, const std::string& newPath) {
+        if (std::rename(oldPath.c_str(), newPath.c_str()) != 0) {
+            std::cerr << "Error renaming file!" << std::endl;
+            return;
+        }
+    }
+
+    void deleteFile(const std::string& filePath) {
+        if (std::remove(filePath.c_str()) != 0) {
+            std::cerr << "Error deleting file!" << std::endl;
+            return;
+        }
+    }
+
+    bool checkFileExist(const std::string& filePath) {
+        std::ifstream file(filePath);
+        if (!file) {
+            return false;
+        }
+        file.close();
+        return true;
+    }
+};
+
+FileWorker* FileWorker::instance = nullptr;
+
+int main() {
+    // Getting the singleton instance of the FileWorker class
+    FileWorker* fileWorker = FileWorker::getInstance();
+
+    // Creating a new file
+    fileWorker->createFile("test.txt");
+
+    // Checking if the file exists
+    if (fileWorker->checkFileExist("test.txt")) {
+        std::cout << "File exists!" << std::endl;
+    }
+
+    // Renaming the file
+    fileWorker->renameFile("test.txt", "new_test.txt");
+
+    // Checking if the old file still exists
+    if (!fileWorker->checkFileExist("test.txt")) {
+        std::cout << "Old file does not exist!" << std::endl;
+    }
+
+    // Checking if the new file exists
+    if (fileWorker->checkFileExist("new_test.txt")) {
+        std::cout << "New file exists!" << std::endl;
+    }
+
+    // Deleting the file
+    fileWorker->deleteFile("new_test.txt");
+
+    // Checking if the file has been deleted
+    if (!fileWorker->checkFileExist("new_test.txt")) {
+        std::cout << "File has been deleted!" << std::endl;
+    }
+
+    // Trying to create a new instance of the FileWorker class (this should fail)
+    // FileWorker* fileWorker2 = new FileWorker(); // This line will not compile
+
+    // Deleting the singleton instance of the FileWorker class
+    delete fileWorker;
+
+    return 0;
+}
+
+// ya hochy avtomat plz
